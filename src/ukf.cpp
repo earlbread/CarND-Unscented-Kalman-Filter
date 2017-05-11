@@ -52,6 +52,8 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+  // state dimension
+  n_x_ = 5;
 }
 
 UKF::~UKF() {}
@@ -70,6 +72,30 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 }
 
 /**
+ * Generate sigma points.
+ * @param {MatrixXd*} Xsig_out The pointer to store sigma points
+ */
+void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out) {
+  lambda_ = 3 - n_x_;
+
+  // Create sigma point matrix
+  MatrixXd Xsig = MatrixXd(n_x_, 2 * n_x_ + 1);
+
+  // Calculate square root of P
+  MatrixXd A = P_.llt().matrixL();
+
+  Xsig.col(0) = x_;
+  A = A * sqrt(lambda_ + n_x_);
+
+  for (int i = 0; i < 2 * n_x_ + 1; i++) {
+    Xsig.col(i + 1) = x_ + A.col(i);
+    Xsig.col(i + 1 + n_x_) = x_ - A.col(i);
+  }
+
+  *Xsig_out = Xsig;
+}
+
+/**
  * Predicts sigma points, the state, and the state covariance matrix.
  * @param {double} delta_t the change in time (in seconds) between the last
  * measurement and this one.
@@ -81,6 +107,10 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+
+  MatrixXd* Xsig_out;
+  GenerateSigmaPoints(Xsig_out);
+  std::cout << Xsig_out << std::endl;
 }
 
 /**

@@ -90,6 +90,13 @@ public:
    */
   void ProcessMeasurement(MeasurementPackage meas_package);
 
+
+  /**
+   * Generate sigma points.
+   * @param {MatrixXd*} Xsig_out The pointer to store sigma points
+   */
+  void GenerateSigmaPoints(MatrixXd* Xsig_out);
+
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
    * matrix
