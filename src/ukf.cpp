@@ -12,6 +12,7 @@ using std::vector;
  * Initializes Unscented Kalman filter
  */
 UKF::UKF() {
+  is_initialized_ = false;
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -69,6 +70,37 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
+
+  // Initialization
+  if (!is_initialized_) {
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+      /**
+      Convert radar from polar to cartesian coordinates and initialize state.
+      */
+      const float rho = meas_package.raw_measurements_[0];
+      const float phi = meas_package.raw_measurements_[1];
+
+      x_ << rho * cos(phi),
+            rho * sin(phi),
+            0,
+            0,
+            0;
+    } else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+      /**
+      Initialize state.
+      */
+      x_ << meas_package.raw_measurements_[0],
+            meas_package.raw_measurements_[1],
+            0,
+            0,
+            0;
+    }
+
+    time_us_ = meas_package.timestamp_;
+    is_initialized_ = true;
+  }
+  const double delta_t = (meas_package.timestamp_ - time_us_) / 1000000.0;
+  time_us_ = meas_package.timestamp_;
 }
 
 /**
