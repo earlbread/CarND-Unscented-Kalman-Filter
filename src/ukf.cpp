@@ -141,8 +141,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   Xsig_aug.col(0)  = x_aug;
   L = sqrt(lambda_ + n_aug_) * L;
 
-  for (int i = 0; i < n_aug_; i++)
-  {
+  for (int i = 0; i < n_aug_; i++) {
     Xsig_aug.col(i + 1)         = x_aug + L.col(i);
     Xsig_aug.col(i + 1 + n_aug_) = x_aug - L.col(i);
   }
@@ -156,8 +155,7 @@ void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double del
   MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   //predict sigma points
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
-  {
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     //extract values for better readability
     double p_x = Xsig_aug(0, i);
     double p_y = Xsig_aug(1, i);
@@ -174,8 +172,7 @@ void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double del
     if (fabs(yawd) > 0.001) {
         px_p = p_x + v/yawd * ( sin (yaw + yawd*delta_t) - sin(yaw));
         py_p = p_y + v/yawd * ( cos(yaw) - cos(yaw+yawd*delta_t) );
-    }
-    else {
+    } else {
         px_p = p_x + v*delta_t*cos(yaw);
         py_p = p_y + v*delta_t*sin(yaw);
     }
