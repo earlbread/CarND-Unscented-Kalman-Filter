@@ -200,6 +200,49 @@ void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double del
   //write result
   *Xsig_out = Xsig_pred;
 }
+
+void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd* P_out) {
+  //create vector for weights
+  VectorXd weights = VectorXd(2*n_aug_+1);
+
+  //create vector for predicted state
+  VectorXd x = VectorXd(n_x_);
+
+  //create covariance matrix for prediction
+  MatrixXd P = MatrixXd(n_x_, n_x_);
+
+  // set weights
+  double weight_0 = lambda_ / (lambda_ + n_aug_);
+  double weight_others = 0.5 / (n_aug_ + lambda_);
+
+  weights(0) = weight_0;
+  for (int i = 1; i < 2 * n_aug_ + 1; i++) {  //2n+1 weights
+    weights(i) = weight_others;
+  }
+
+  //predicted state mean
+  x.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
+    x = x + weights(i) * Xsig_pred.col(i);
+  }
+
+  //predicted state covariance matrix
+  P.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
+    // state difference
+    VectorXd x_diff = Xsig_pred.col(i) - x;
+    //angle normalization
+    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
+    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
+
+    P = P + weights(i) * x_diff * x_diff.transpose();
+  }
+
+  //write result
+  *x_out = x;
+  *P_out = P;
+}
+
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
  * @param {double} delta_t the change in time (in seconds) between the last
@@ -217,6 +260,7 @@ void UKF::Prediction(double delta_t) {
 
   AugmentedSigmaPoints(&Xsig_aug);
   SigmaPointPrediction(Xsig_aug, &Xsig_pred, delta_t);
+  PredictMeanAndCovariance(Xsig_pred, &x_, &P_);
 }
 
 /**
