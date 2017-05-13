@@ -90,6 +90,7 @@ public:
    */
   void ProcessMeasurement(MeasurementPackage meas_package);
 
+  void AugmentedSigmaPoints(MatrixXd* Xsig_out);
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
    * matrix
