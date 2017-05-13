@@ -96,6 +96,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             0;
     }
 
+    P_ << 1, 0, 0, 0, 0,
+          0, 1, 0, 0, 0,
+          0, 0, 1, 0, 0,
+          0, 0, 0, 1, 0,
+          0, 0, 0, 0, 1;
+
     time_us_ = meas_package.timestamp_;
     is_initialized_ = true;
   }
