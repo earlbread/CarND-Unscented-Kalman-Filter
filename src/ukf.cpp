@@ -64,6 +64,17 @@ UKF::UKF() {
 
   // predicted sigma points matrix
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
+
+  // set weights
+  weights_ = VectorXd(2 * n_aug_ + 1);
+
+  double weight_0 = lambda_ / (lambda_ + n_aug_);
+  double weight_others = 0.5 / (n_aug_ + lambda_);
+
+  weights_(0) = weight_0;
+  for (int i = 1; i < 2 * n_aug_ + 1; i++) {  //2n+1 weights
+    weights_(i) = weight_others;
+  }
 }
 
 UKF::~UKF() {}
@@ -216,28 +227,16 @@ void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double del
 }
 
 void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd* P_out) {
-  //create vector for weights
-  VectorXd weights = VectorXd(2*n_aug_+1);
-
   //create vector for predicted state
   VectorXd x = VectorXd(n_x_);
 
   //create covariance matrix for prediction
   MatrixXd P = MatrixXd(n_x_, n_x_);
 
-  // set weights
-  double weight_0 = lambda_ / (lambda_ + n_aug_);
-  double weight_others = 0.5 / (n_aug_ + lambda_);
-
-  weights(0) = weight_0;
-  for (int i = 1; i < 2 * n_aug_ + 1; i++) {  //2n+1 weights
-    weights(i) = weight_others;
-  }
-
   //predicted state mean
   x.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
-    x = x + weights(i) * Xsig_pred.col(i);
+    x = x + weights_(i) * Xsig_pred.col(i);
   }
 
   //predicted state covariance matrix
@@ -249,7 +248,7 @@ void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd
     while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
     while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
 
-    P = P + weights(i) * x_diff * x_diff.transpose();
+    P = P + weights_(i) * x_diff * x_diff.transpose();
   }
 
   //write result
@@ -277,20 +276,11 @@ void UKF::Prediction(double delta_t) {
 }
 
 void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
-  //set vector for weights
-  VectorXd weights = VectorXd(2 * n_aug_ + 1);
-   double weight_0 = lambda_/(lambda_+n_aug_);
-  weights(0) = weight_0;
-  for (int i=1; i<2*n_aug_+1; i++) {
-    double weight = 0.5/(n_aug_+lambda_);
-    weights(i) = weight;
-  }
-
   //mean predicted measurement
   VectorXd z_pred = VectorXd(n_z);
   z_pred.fill(0.0);
   for (int i=0; i < 2*n_aug_+1; i++) {
-      z_pred = z_pred + weights(i) * Zsig.col(i);
+      z_pred = z_pred + weights_(i) * Zsig.col(i);
   }
 
   //measurement covariance matrix S
@@ -304,7 +294,7 @@ void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
     while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
     while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
 
-    S = S + weights(i) * z_diff * z_diff.transpose();
+    S = S + weights_(i) * z_diff * z_diff.transpose();
   }
 
   S = S + R;
@@ -326,7 +316,7 @@ void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
     while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
     while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
 
-    Tc = Tc + weights(i) * x_diff * z_diff.transpose();
+    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
   }
 
   //Kalman gain K;
