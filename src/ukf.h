@@ -101,6 +101,8 @@ public:
    */
   void Prediction(double delta_t);
 
+  void UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z);
+
   /**
    * Updates the state and the state covariance matrix using a laser measurement
    * @param meas_package The measurement at k+1
