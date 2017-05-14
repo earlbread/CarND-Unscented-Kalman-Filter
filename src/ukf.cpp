@@ -61,6 +61,9 @@ UKF::UKF() {
 
   // sigma point spreading parameter
   lambda_ = 3 - n_aug_;
+
+  // predicted sigma points matrix
+  Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 }
 
 UKF::~UKF() {}
@@ -256,11 +259,10 @@ void UKF::Prediction(double delta_t) {
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
   MatrixXd Xsig_aug(n_aug_, 2 * n_aug_ + 1);
-  MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   AugmentedSigmaPoints(&Xsig_aug);
-  SigmaPointPrediction(Xsig_aug, &Xsig_pred, delta_t);
-  PredictMeanAndCovariance(Xsig_pred, &x_, &P_);
+  SigmaPointPrediction(Xsig_aug, &Xsig_pred_, delta_t);
+  PredictMeanAndCovariance(Xsig_pred_, &x_, &P_);
 }
 
 /**
