@@ -64,9 +64,11 @@ UKF::UKF() {
 
   // predicted sigma points matrix
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
+  Xsig_pred_.fill(0.0);
 
   // set weights
   weights_ = VectorXd(2 * n_aug_ + 1);
+  weights_.fill(0.0);
 
   const double weight_0 = lambda_ / (lambda_ + n_aug_);
   const double weight_others = 0.5 / (n_aug_ + lambda_);
@@ -148,18 +150,20 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   //create augmented mean vector
   VectorXd x_aug = VectorXd(7);
+  x_aug.fill(0.0);
 
   //create augmented state covariance
   MatrixXd P_aug = MatrixXd(7, 7);
+  P_aug.fill(0.0);
 
   //create sigma point matrix
   MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
+  Xsig_aug.fill(0.0);
 
   //create augmented mean state
   x_aug << x_, 0, 0;
 
   //create augmented covariance matrix
-  P_aug.fill(0.0);
   P_aug.topLeftCorner(5,5) = P_;
   P_aug(5,5) = std_a_ * std_a_;
   P_aug(6,6) = std_yawdd_ * std_yawdd_;
@@ -183,6 +187,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
 void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double delta_t) {
   //create matrix with predicted sigma points as columns
   MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+  Xsig_pred.fill(0.0);
 
   //predict sigma points
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
@@ -234,18 +239,18 @@ void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double del
 void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd* P_out) {
   //create vector for predicted state
   VectorXd x = VectorXd(n_x_);
+  x.fill(0.0);
 
   //create covariance matrix for prediction
   MatrixXd P = MatrixXd(n_x_, n_x_);
+  P.fill(0.0);
 
   //predicted state mean
-  x.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     x = x + weights_(i) * Xsig_pred.col(i);
   }
 
   //predicted state covariance matrix
-  P.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     // state difference
     VectorXd x_diff = Xsig_pred.col(i) - x_;
@@ -272,6 +277,7 @@ void UKF::Prediction(double delta_t) {
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
   MatrixXd Xsig_aug(n_aug_, 2 * n_aug_ + 1);
+  Xsig_aug.fill(0.0);
 
   AugmentedSigmaPoints(&Xsig_aug);
   SigmaPointPrediction(Xsig_aug, &Xsig_pred_, delta_t);
@@ -349,6 +355,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+  Zsig.fill(0.0);
 
   //transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
@@ -392,6 +399,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+  Zsig.fill(0.0);
 
   //transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
