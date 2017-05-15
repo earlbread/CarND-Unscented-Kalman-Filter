@@ -22,9 +22,11 @@ UKF::UKF() {
 
   // initial state vector
   x_ = VectorXd(5);
+  x_.fill(0.0);
 
   // initial covariance matrix
   P_ = MatrixXd(5, 5);
+  P_.fill(0.0);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 0.2;
@@ -91,6 +93,9 @@ UKF::UKF() {
   R_radar_ << std_radr_*std_radr_, 0, 0,
               0, std_radphi_*std_radphi_, 0,
               0, 0, std_radrd_*std_radrd_;
+
+  NIS_laser_ = 0.0;
+  NIS_radar_ = 0.0;
 }
 
 UKF::~UKF() {}
@@ -146,6 +151,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     time_us_ = meas_package.timestamp_;
     is_initialized_ = true;
   }
+
   const double delta_t = (meas_package.timestamp_ - time_us_) / 1000000.0;
   time_us_ = meas_package.timestamp_;
 
