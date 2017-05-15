@@ -204,7 +204,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   *Xsig_out = Xsig_aug;
 }
 
-void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double delta_t) {
+void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, double delta_t) {
   //create matrix with predicted sigma points as columns
   MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
   Xsig_pred.fill(0.0);
@@ -245,18 +245,15 @@ void UKF::SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double del
     yawd_p = yawd_p + nu_yawdd*delta_t;
 
     //write predicted sigma point into right column
-    Xsig_pred(0, i) = px_p;
-    Xsig_pred(1, i) = py_p;
-    Xsig_pred(2, i) = v_p;
-    Xsig_pred(3, i) = yaw_p;
-    Xsig_pred(4, i) = yawd_p;
+    Xsig_pred_(0, i) = px_p;
+    Xsig_pred_(1, i) = py_p;
+    Xsig_pred_(2, i) = v_p;
+    Xsig_pred_(3, i) = yaw_p;
+    Xsig_pred_(4, i) = yawd_p;
   }
-
-  //write result
-  *Xsig_out = Xsig_pred;
 }
 
-void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd* P_out) {
+void UKF::PredictMeanAndCovariance() {
   //create vector for predicted state
   VectorXd x = VectorXd(n_x_);
   x.fill(0.0);
@@ -267,21 +264,21 @@ void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd
 
   //predicted state mean
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
-    x = x + weights_(i) * Xsig_pred.col(i);
+    x = x + weights_(i) * Xsig_pred_.col(i);
   }
 
   //predicted state covariance matrix
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     // state difference
-    VectorXd x_diff = Xsig_pred.col(i) - x_;
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
     NormalizeAngle(&x_diff(3));
 
     P = P + weights_(i) * x_diff * x_diff.transpose();
   }
 
   //write result
-  *x_out = x;
-  *P_out = P;
+  x_ = x;
+  P_ = P;
 }
 
 /**
@@ -300,8 +297,8 @@ void UKF::Prediction(double delta_t) {
   Xsig_aug.fill(0.0);
 
   AugmentedSigmaPoints(&Xsig_aug);
-  SigmaPointPrediction(Xsig_aug, &Xsig_pred_, delta_t);
-  PredictMeanAndCovariance(Xsig_pred_, &x_, &P_);
+  SigmaPointPrediction(Xsig_aug, delta_t);
+  PredictMeanAndCovariance();
 }
 
 void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z, double* NIS) {

@@ -106,8 +106,8 @@ public:
   void ProcessMeasurement(MeasurementPackage meas_package);
 
   void AugmentedSigmaPoints(MatrixXd* Xsig_out);
-  void SigmaPointPrediction(MatrixXd Xsig_aug, MatrixXd* Xsig_out, double delta_t);
-  void PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd* P_out);
+  void SigmaPointPrediction(MatrixXd Xsig_aug, double delta_t);
+  void PredictMeanAndCovariance();
 
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
