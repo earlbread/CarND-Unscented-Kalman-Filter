@@ -116,7 +116,7 @@ public:
    */
   void Prediction(double delta_t);
 
-  void UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z);
+  void UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z, double* NIS);
 
   /**
    * Updates the state and the state covariance matrix using a laser measurement

@@ -298,7 +298,7 @@ void UKF::Prediction(double delta_t) {
   PredictMeanAndCovariance(Xsig_pred_, &x_, &P_);
 }
 
-void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
+void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z, double* NIS) {
   //mean predicted measurement
   VectorXd z_pred = VectorXd(n_z);
   z_pred.fill(0.0);
@@ -347,6 +347,8 @@ void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
   P_ = P_ - K*S*K.transpose();
+
+  *NIS = z_diff.transpose() * S * z_diff;
 }
 
 
@@ -383,7 +385,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   VectorXd z = VectorXd(n_z_laser_);
   z = meas_package.raw_measurements_;
 
-  UpdateState(n_z_laser_, Zsig, R_laser_, z);
+  UpdateState(n_z_laser_, Zsig, R_laser_, z, &NIS_laser_);
 }
 
 /**
@@ -425,5 +427,5 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   VectorXd z = VectorXd(n_z_radar_);
   z = meas_package.raw_measurements_;
 
-  UpdateState(n_z_radar_, Zsig, R_radar_, z);
+  UpdateState(n_z_radar_, Zsig, R_radar_, z, &NIS_radar_);
 }
