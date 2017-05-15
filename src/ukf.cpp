@@ -78,6 +78,19 @@ UKF::UKF() {
   for (int i = 1; i < 2 * n_aug_ + 1; i++) {  //2n+1 weights
     weights_(i) = weight_others;
   }
+
+  n_z_laser_ = 2;
+
+  R_laser_ = MatrixXd(n_z_laser_, n_z_laser_);
+  R_laser_ << std_laspx_ * std_laspx_, 0,
+              0, std_laspy_ * std_laspy_;
+
+  n_z_radar_ = 3;
+
+  R_radar_ = MatrixXd(n_z_radar_, n_z_radar_);
+  R_radar_ << std_radr_*std_radr_, 0, 0,
+              0, std_radphi_*std_radphi_, 0,
+              0, 0, std_radrd_*std_radrd_;
 }
 
 UKF::~UKF() {}
@@ -351,11 +364,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   You'll also need to calculate the lidar NIS.
   */
 
-  //set measurement dimension, radar can measure r, phi, and r_dot
-  const int n_z = 2;
-
   //create matrix for sigma points in measurement space
-  MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+  MatrixXd Zsig = MatrixXd(n_z_laser_, 2 * n_aug_ + 1);
   Zsig.fill(0.0);
 
   //transform sigma points into measurement space
@@ -370,15 +380,10 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     Zsig(1, i) = p_y;
   }
 
-  //add measurement noise covariance matrix
-  MatrixXd R = MatrixXd(n_z,n_z);
-  R <<    std_laspx_ * std_laspx_, 0,
-          0, std_laspy_ * std_laspy_;
-
-  VectorXd z = VectorXd(n_z);
+  VectorXd z = VectorXd(n_z_laser_);
   z = meas_package.raw_measurements_;
 
-  UpdateState(n_z, Zsig, R, z);
+  UpdateState(n_z_laser_, Zsig, R_laser_, z);
 }
 
 /**
@@ -395,11 +400,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   You'll also need to calculate the radar NIS.
   */
 
-  //set measurement dimension, radar can measure r, phi, and r_dot
-  const int n_z = 3;
-
   //create matrix for sigma points in measurement space
-  MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+  MatrixXd Zsig = MatrixXd(n_z_radar_, 2 * n_aug_ + 1);
   Zsig.fill(0.0);
 
   //transform sigma points into measurement space
@@ -420,14 +422,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Zsig(2,i) = (p_x*v1 + p_y*v2 ) / max(DBL_EPSILON, Zsig(0, i));   //r_dot
   }
 
-  //add measurement noise covariance matrix
-  MatrixXd R = MatrixXd(n_z,n_z);
-  R <<    std_radr_*std_radr_, 0, 0,
-          0, std_radphi_*std_radphi_, 0,
-          0, 0,std_radrd_*std_radrd_;
-
-  VectorXd z = VectorXd(n_z);
+  VectorXd z = VectorXd(n_z_radar_);
   z = meas_package.raw_measurements_;
 
-  UpdateState(n_z, Zsig, R, z);
+  UpdateState(n_z_radar_, Zsig, R_radar_, z);
 }

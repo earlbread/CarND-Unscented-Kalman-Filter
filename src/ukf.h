@@ -65,6 +65,12 @@ public:
   ///* Augmented state dimension
   int n_aug_;
 
+  ///* Laser Measurement dimension
+  int n_z_laser_;
+
+  ///* Radar Measurement dimension
+  int n_z_radar_;
+
   ///* Sigma point spreading parameter
   double lambda_;
 
@@ -73,6 +79,13 @@ public:
 
   ///* the current NIS for laser
   double NIS_laser_;
+
+  ///* Laser measurement noise covariance matrix
+  MatrixXd R_laser_;
+
+  ///* Radar measurement noise covariance matrix
+  MatrixXd R_radar_;
+
 
   /**
    * Constructor
