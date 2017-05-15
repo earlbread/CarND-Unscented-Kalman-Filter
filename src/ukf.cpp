@@ -270,7 +270,7 @@ void UKF::PredictMeanAndCovariance() {
   //predicted state covariance matrix
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     // state difference
-    VectorXd x_diff = Xsig_pred_.col(i) - x_;
+    VectorXd x_diff = Xsig_pred_.col(i) - x;
     NormalizeAngle(&x_diff(3));
 
     P = P + weights_(i) * x_diff * x_diff.transpose();
