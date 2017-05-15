@@ -1,6 +1,7 @@
 #include "ukf.h"
 #include "tools.h"
 #include "Eigen/Dense"
+#include <cfloat>
 #include <iostream>
 
 using namespace std;
@@ -416,7 +417,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     // measurement model
     Zsig(0,i) = sqrt(p_x*p_x + p_y*p_y);                        //r
     Zsig(1,i) = atan2(p_y,p_x);                                 //phi
-    Zsig(2,i) = (p_x*v1 + p_y*v2 ) / sqrt(p_x*p_x + p_y*p_y);   //r_dot
+    Zsig(2,i) = (p_x*v1 + p_y*v2 ) / max(DBL_EPSILON, Zsig(0, i));   //r_dot
   }
 
   //add measurement noise covariance matrix
