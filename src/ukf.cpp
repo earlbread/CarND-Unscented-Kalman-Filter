@@ -79,6 +79,11 @@ UKF::UKF() {
 
 UKF::~UKF() {}
 
+void UKF::NormalizeAngle(double *angle) {
+    while (*angle >  M_PI) *angle -= 2.*M_PI;
+    while (*angle < -M_PI) *angle += 2.*M_PI;
+}
+
 /**
  * @param {MeasurementPackage} meas_package The latest measurement data of
  * either radar or laser.
@@ -244,9 +249,7 @@ void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred, VectorXd* x_out, MatrixXd
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     // state difference
     VectorXd x_diff = Xsig_pred.col(i) - x_;
-    //angle normalization
-    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
+    NormalizeAngle(&x_diff(3));
 
     P = P + weights_(i) * x_diff * x_diff.transpose();
   }
@@ -290,9 +293,7 @@ void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
 
-    //angle normalization
-    while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+    NormalizeAngle(&z_diff(1));
 
     S = S + weights_(i) * z_diff * z_diff.transpose();
   }
@@ -306,15 +307,11 @@ void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
 
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
-    //angle normalization
-    while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+    NormalizeAngle(&z_diff(1));
 
     // state difference
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
-    //angle normalization
-    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
+    NormalizeAngle(&x_diff(3));
 
     Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
   }
@@ -325,9 +322,7 @@ void UKF::UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, VectorXd z) {
   //residual
   VectorXd z_diff = z - z_pred;
 
-  //angle normalization
-  while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-  while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+  NormalizeAngle(&z_diff(1));
 
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
